@@ -375,11 +375,11 @@
           </div>
           <div>
             <label class="block font-medium text-brand-800 mb-1">Telefone Principal (WhatsApp)</label>
-            <input type="text" id="clientTelefone" placeholder="Ex: (11) 98765-4321" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+            <input type="text" id="clientTelefone" placeholder="(11) 12345-6789" maxlength="15" oninput="formatPhoneInput(this)" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
           </div>
           <div>
             <label class="block font-medium text-brand-800 mb-1">Telefone Secundário</label>
-            <input type="text" id="clientTelefone2" placeholder="Ex: (11) 3456-7890" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+            <input type="text" id="clientTelefone2" placeholder="(11) 12345-6789" maxlength="15" oninput="formatPhoneInput(this)" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
           </div>
           <div>
             <label class="block font-medium text-brand-800 mb-1">E-mail</label>
@@ -617,6 +617,21 @@
       return Number.parseFloat(digits) || 0;
     }
 
+    function formatPhoneNumber(value) {
+      const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+      if (!digits) return '';
+      const ddd = digits.slice(0, 2);
+      const rest = digits.slice(2);
+      if (digits.length <= 2) return `(${ddd}`;
+      if (rest.length <= 4) return `(${ddd}) ${rest}`;
+      if (digits.length <= 10) return `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4)}`;
+      return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5)}`;
+    }
+
+    function formatPhoneInput(input) {
+      input.value = formatPhoneNumber(input.value);
+    }
+
     function formatCurrencyInput(input) {
       const digits = input.value.replace(/\D/g, '');
       if (!digits) { input.value = ''; updateParcelasSoma(); return; }
@@ -790,8 +805,8 @@
           document.getElementById('clientId').value = c.id;
           document.getElementById('clientNome').value = c.nome || '';
           document.getElementById('clientCpfCnpj').value = formatCpfCnpj(c.cpfCnpj || '');
-          document.getElementById('clientTelefone').value = c.telefone || '';
-          document.getElementById('clientTelefone2').value = c.telefone2 || '';
+          document.getElementById('clientTelefone').value = formatPhoneNumber(c.telefone || '');
+          document.getElementById('clientTelefone2').value = formatPhoneNumber(c.telefone2 || '');
           document.getElementById('clientEmail').value = c.email || '';
           document.getElementById('clientEndereco').value = c.endereco || '';
           document.getElementById('clientCep').value = c.cep || '';
@@ -836,8 +851,8 @@
       content.innerHTML = `
         <p><strong>Nome:</strong> ${c.nome || '—'}</p>
         <p><strong>CPF/CNPJ:</strong> ${formatCpfCnpj(c.cpfCnpj) || '—'}</p>
-        <p><strong>Telefone 1:</strong> ${c.telefone || '—'}</p>
-        <p><strong>Telefone 2:</strong> ${c.telefone2 || '—'}</p>
+        <p><strong>Telefone 1:</strong> ${formatPhoneNumber(c.telefone) || '—'}</p>
+        <p><strong>Telefone 2:</strong> ${formatPhoneNumber(c.telefone2) || '—'}</p>
         <p><strong>E-mail:</strong> ${c.email || '—'}</p>
         <p><strong>Endereço:</strong> ${c.endereco || '—'}</p>
         <p><strong>CEP:</strong> ${c.cep || '—'}</p>
@@ -1255,6 +1270,8 @@
         return true;
       });
 
+      filteredParcelas.sort((a, b) => String(b.vencimento || '').localeCompare(String(a.vencimento || '')));
+
       tbody.innerHTML = filteredParcelas.map(p => {
         const cli = clients.find(c => c.id === p.clienteId);
         const isAtrasado = p.status === 'Pendente' && p.vencimento < hojeStr;
@@ -1344,6 +1361,20 @@
       const [y, m, d] = dateStr.split('-');
       return `${d}/${m}/${y}`;
     }
+
+    // Todos os campos de texto exibem e armazenam o conteúdo em letras maiúsculas.
+    document.addEventListener('input', (event) => {
+      const field = event.target;
+      if (field instanceof HTMLInputElement && field.type === 'text' || field instanceof HTMLTextAreaElement) {
+        const start = field.selectionStart;
+        const end = field.selectionEnd;
+        const upper = field.value.toLocaleUpperCase('pt-BR');
+        if (field.value !== upper) {
+          field.value = upper;
+          try { field.setSelectionRange(start, end); } catch (_) {}
+        }
+      }
+    });
 
     function showToast(message, type = 'success') {
       const container = document.getElementById('toastContainer');
