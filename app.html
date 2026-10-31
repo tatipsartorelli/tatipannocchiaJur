@@ -792,6 +792,28 @@
         const parcelasSnap = await window.fsGetDocs(window.fsCollection(window.firebaseDB, 'parcelas'));
         parcelas = parcelasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
+        // Limpa parcelas órfãs: se o cliente não existe mais, a parcela não deve
+        // aparecer no Financeiro nem participar dos totais, mesmo que a exclusão
+        // anterior do cliente tenha deixado registros antigos no Firestore.
+        const idsClientesExistentes = new Set(clients.map(c => c.id));
+        const parcelasOrfas = parcelas.filter(p => !p.clienteId || !idsClientesExistentes.has(p.clienteId));
+        if (parcelasOrfas.length) {
+          const exclusoes = await Promise.allSettled(
+            parcelasOrfas.map(p =>
+              window.fsDeleteDoc(window.fsDoc(window.firebaseDB, 'parcelas', p.id))
+            )
+          );
+          exclusoes.forEach((resultado, i) => {
+            if (resultado.status === 'rejected') {
+              console.error('Falha ao excluir parcela órfã:', parcelasOrfas[i].id, resultado.reason);
+            }
+          });
+          // Mesmo se alguma exclusão remota falhar, não exibe nem contabiliza
+          // esses registros enquanto a aplicação estiver aberta.
+          const idsOrfas = new Set(parcelasOrfas.map(p => p.id));
+          parcelas = parcelas.filter(p => !idsOrfas.has(p.id));
+        }
+
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
       }
