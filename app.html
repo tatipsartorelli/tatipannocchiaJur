@@ -325,12 +325,18 @@
       <main class="bg-white rounded-2xl border border-brand-200/80 shadow-sm overflow-hidden">
         <div class="p-4 border-b border-brand-100 flex justify-between items-center">
           <h3 class="text-sm font-bold text-brand-900">Cronograma de Parcelas</h3>
-          <select id="finStatusFilter" onchange="renderFinanceiro()" class="px-3 py-1.5 bg-brand-50 border border-brand-200 rounded-xl text-xs">
+          <div class="flex flex-col sm:flex-row gap-2">
+            <div class="relative">
+              <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-400"></i>
+              <input id="finClienteSearch" type="search" oninput="renderFinanceiro()" placeholder="Buscar cliente..." aria-label="Buscar parcelas por cliente" class="pl-9 pr-3 py-1.5 bg-white border border-brand-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-300 w-full sm:w-52">
+            </div>
+            <select id="finStatusFilter" onchange="renderFinanceiro()" class="px-3 py-1.5 bg-brand-50 border border-brand-200 rounded-xl text-xs">
             <option value="todos">Todas as Parcelas</option>
             <option value="pendente" selected>Pendentes</option>
             <option value="pago">Pagas</option>
             <option value="atrasado">Em Atraso</option>
-          </select>
+            </select>
+          </div>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
@@ -1297,12 +1303,13 @@
                 : '<span class="text-slate-400">—</span>'}
             </td>
             <td class="py-3.5 px-4">${statusBadge}</td>
-            <td class="py-3.5 px-6 text-right space-x-1">
-              <button onclick="viewProcesso('${p.id}')" class="p-1.5 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100" title="Visualizar"><i data-lucide="eye" class="w-4 h-4"></i></button>
-              <button onclick="openPrazoModal('${p.id}')" class="p-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
-              ${p.status !== 'Baixado' ? `<button onclick="darBaixaProcesso('${p.id}')" class="p-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-all" title="Dar baixa" aria-label="Dar baixa"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>` : ''}
-              <button onclick="deleteProcesso('${p.id}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-            </td>
+ <td class="py-3.5 px-6 text-right space-x-1">
+<button onclick="viewProcesso('${p.id}')" class="p-1.5 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100" title="Visualizar"><i data-lucide="eye" class="w-4 h-4"</i> </button>
+<button onclick="openPrazoModal('${p.id}')" class="p-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+${p.status !== 'Baixado' ? `
+<button onclick="darBaixaProcesso('${p.id}')" class="inline-flex items-center justify-center w-4 h-4 p-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all align-middle" title="Dar baixa" aria-label="Dar baixa"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>` : ''}
+<button onclick="deleteProcesso('${p.id}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+ </td>
           </tr>
         `;
       }).join('');
@@ -1364,6 +1371,7 @@
     function renderFinanceiro() {
       const tbody = document.getElementById('financeiroTableBody');
       const filterStatus = document.getElementById('finStatusFilter').value;
+      const clientSearch = (document.getElementById('finClienteSearch')?.value || '').trim().toLocaleLowerCase('pt-BR');
       const hojeStr = new Date().toISOString().split('T')[0];
 
       let totContratado = 0, totRecebido = 0, totAReceber = 0, totAtrasado = 0;
@@ -1387,6 +1395,9 @@
       );
 
       let filteredParcelas = parcelas.filter(p => {
+        const cliente = clients.find(c => c.id === p.clienteId);
+        const nomeCliente = String(cliente?.nome || '').toLocaleLowerCase('pt-BR');
+        if (clientSearch && !nomeCliente.includes(clientSearch)) return false;
         const isAtrasado = p.status === 'Pendente' && p.vencimento < hojeStr;
         if (filterStatus === 'pago') return p.status === 'Pago';
         if (filterStatus === 'pendente') return p.status === 'Pendente' && !isAtrasado;
