@@ -1109,9 +1109,9 @@
             ${!c.telefone && !c.email ? '<span class="text-slate-400">—</span>' : ''}
           </td>
           <td class="py-3.5 px-6 text-right space-x-1">
-            <button onclick="viewClient('${c.id}')" class="p-1.5 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100" title="Visualizar"><i data-lucide="eye" class="w-4 h-4"></i></button>
-            <button onclick="openClientModal('${c.id}')" class="p-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
-            <button onclick="deleteClient('${c.id}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            <button onclick="viewClient('${c.id}')" class="inline-flex items-center justify-center w-8 h-8 p-1.5 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100 transition-all align-middle" title="Visualizar"><i data-lucide="eye" class="w-4 h-4"></i></button>
+            <button onclick="openClientModal('${c.id}')" class="inline-flex items-center justify-center w-8 h-8 p-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-all align-middle" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+            <button onclick="deleteClient('${c.id}')" class="inline-flex items-center justify-center w-8 h-8 p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-all align-middle" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
           </td>
         </tr>
       `}).join('');
@@ -1303,13 +1303,12 @@
                 : '<span class="text-slate-400">—</span>'}
             </td>
             <td class="py-3.5 px-4">${statusBadge}</td>
- <td class="py-3.5 px-6 text-right space-x-1">
-<button onclick="viewProcesso('${p.id}')" class="p-1.5 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100" title="Visualizar"><i data-lucide="eye" class="w-4 h-4"</i> </button>
-<button onclick="openPrazoModal('${p.id}')" class="p-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
-${p.status !== 'Baixado' ? `
-<button onclick="darBaixaProcesso('${p.id}')" class="inline-flex items-center justify-center w-4 h-4 p-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all align-middle" title="Dar baixa" aria-label="Dar baixa"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>` : ''}
-<button onclick="deleteProcesso('${p.id}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
- </td>
+            <td class="py-3.5 px-6 text-right space-x-1">
+              <button onclick="viewProcesso('${p.id}')" class="inline-flex items-center justify-center w-8 h-8 p-1.5 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100 transition-all align-middle" title="Visualizar"><i data-lucide="eye" class="w-4 h-4"></i></button>
+              <button onclick="openPrazoModal('${p.id}')" class="inline-flex items-center justify-center w-8 h-8 p-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-all align-middle" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+              ${p.status !== 'Baixado' ? `<button onclick="darBaixaProcesso('${p.id}')" class="inline-flex items-center justify-center w-8 h-8 p-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-all align-middle" title="Dar baixa" aria-label="Dar baixa"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>` : ''}
+              <button onclick="deleteProcesso('${p.id}')" class="inline-flex items-center justify-center w-8 h-8 p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-all align-middle" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </td>
           </tr>
         `;
       }).join('');
