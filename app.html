@@ -178,7 +178,7 @@
             </div>
           </div>
           <p id="dashTotalClientes" class="text-2xl font-bold text-brand-900">0</p>
-          <p class="text-[11px] text-brand-400 mt-1">Clientes com processos ativos</p>
+          <p class="text-[11px] text-brand-400 mt-1">Base cadastrada no sistema</p>
         </div>
       </div>
 
@@ -186,7 +186,7 @@
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="text-base font-semibold text-brand-900">Próximos Prazos Processuais</h3>
-            <p class="text-xs text-brand-400">Atos que demandam atenção nos próximos dias</p>
+            <p class="text-xs text-brand-400">Atos e prazos a vencer nos próximos 15 dias</p>
           </div>
           <button type="button" onclick="window.openPrazoModal()" class="inline-flex items-center text-xs font-medium text-white bg-brand-500 hover:bg-brand-600 px-3.5 py-2 rounded-xl transition-all shadow-sm">
             <i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i> Novo Processo
@@ -196,7 +196,7 @@
       </div>
     </section>
 
-    <!-- SEÇÃO 2: PROCESSOS (ANTIGO PRAZOS) -->
+    <!-- SEÇÃO 2: PROCESSOS -->
     <section id="sec-prazos" class="hidden space-y-6">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -225,9 +225,9 @@
             <thead>
               <tr class="bg-brand-50/60 border-b border-brand-100 text-xs font-semibold text-brand-700 uppercase tracking-wider">
                 <th class="py-3.5 px-6">ID / Processo</th>
-                <th class="py-3.5 px-4">Cliente / Vara</th>
-                <th class="py-3.5 px-4">Possui Prazo?</th>
-                <th class="py-3.5 px-4">Tipo de Prazo / Vencimento</th>
+                <th class="py-3.5 px-4">Cliente / Detalhe</th>
+                <th class="py-3.5 px-4">Tipo</th>
+                <th class="py-3.5 px-4">Prazo / Vencimento</th>
                 <th class="py-3.5 px-4">Status</th>
                 <th class="py-3.5 px-6 text-right">Ações</th>
               </tr>
@@ -273,9 +273,8 @@
               <tr class="bg-brand-50/60 border-b border-brand-100 text-xs font-semibold text-brand-700 uppercase tracking-wider">
                 <th class="py-3.5 px-6">Cliente</th>
                 <th class="py-3.5 px-4">CPF / CNPJ</th>
-                <th class="py-3.5 px-4">Valor Contrato</th>
+                <th class="py-3.5 px-4">Tipo Contrato</th>
                 <th class="py-3.5 px-4">Contato</th>
-                <th class="py-3.5 px-4">Cidade / CEP</th>
                 <th class="py-3.5 px-6 text-right">Ações</th>
               </tr>
             </thead>
@@ -410,24 +409,41 @@
           <div class="sm:col-span-2 pt-3 border-t border-brand-100">
             <h4 class="font-bold text-brand-900 mb-2">Dados do Contrato / Honorários</h4>
           </div>
-          <div>
-            <label class="block font-medium text-brand-800 mb-1">Valor Total do Contrato (R$) *</label>
-            <input type="number" step="0.01" id="clientValorContrato" required placeholder="Ex: 5000.00" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
-          </div>
-          <div>
-            <label class="block font-medium text-brand-800 mb-1">Forma de Pagamento *</label>
-            <select id="clientFormaPagamento" onchange="toggleParcelas()" required class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
-              <option value="A Vista">À Vista</option>
-              <option value="Parcelado">Parcelado</option>
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-brand-800 mb-1">Tipo de Contrato *</label>
+            <select id="clientTipoContrato" onchange="toggleTipoContratoFields()" required class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+              <option value="Particular">Particular</option>
+              <option value="Defensoria">Defensoria</option>
             </select>
           </div>
-          <div id="divNumParcelas" class="hidden">
-            <label class="block font-medium text-brand-800 mb-1">Nº de Parcelas *</label>
-            <input type="number" id="clientNumParcelas" min="1" max="60" value="1" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+
+          <!-- Campos Defensoria -->
+          <div id="divDefensoria" class="hidden sm:col-span-2">
+            <label class="block font-medium text-brand-800 mb-1">Número de Ofício</label>
+            <input type="text" id="clientNumOficio" placeholder="Número de ofício (opcional)" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
           </div>
-          <div id="divDiaVencimento" class="hidden">
-            <label class="block font-medium text-brand-800 mb-1">Dia do Vencimento Mensal *</label>
-            <input type="number" id="clientDiaVencimento" min="1" max="31" value="10" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+
+          <!-- Campos Particular -->
+          <div id="divParticularValor" class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-medium text-brand-800 mb-1">Valor Total do Contrato (R$)</label>
+              <input type="number" step="0.01" id="clientValorContrato" placeholder="Ex: 5000.00" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+            </div>
+            <div>
+              <label class="block font-medium text-brand-800 mb-1">Forma de Pagamento</label>
+              <select id="clientFormaPagamento" onchange="toggleParcelas()" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+                <option value="A Vista">À Vista</option>
+                <option value="Parcelado">Parcelado</option>
+              </select>
+            </div>
+            <div id="divNumParcelas" class="hidden">
+              <label class="block font-medium text-brand-800 mb-1">Nº de Parcelas</label>
+              <input type="number" id="clientNumParcelas" min="1" max="60" value="1" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+            </div>
+            <div id="divDiaVencimento" class="hidden">
+              <label class="block font-medium text-brand-800 mb-1">Dia do Vencimento Mensal</label>
+              <input type="number" id="clientDiaVencimento" min="1" max="31" value="10" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+            </div>
           </div>
         </div>
 
@@ -439,14 +455,28 @@
     </div>
   </div>
 
-  <!-- MODAL: CADASTRO DE PROCESSO (ANTIGO PRAZO) -->
+  <!-- MODAL: VISUALIZAR CLIENTE -->
+  <div id="clientViewModalOverlay" class="fixed inset-0 bg-brand-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl shadow-2xl border border-brand-100 w-full max-w-lg overflow-hidden">
+      <div class="px-6 py-4 bg-brand-50/60 border-b border-brand-100 flex items-center justify-between">
+        <h3 class="text-base font-bold text-brand-900">Visualizar Cliente</h3>
+        <button type="button" onclick="closeClientViewModal()" class="p-2 text-brand-400 hover:text-brand-700"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="clientViewContent" class="p-6 space-y-3 text-xs sm:text-sm text-brand-900"></div>
+      <div class="px-6 py-3 bg-brand-50/40 border-t border-brand-100 flex justify-end">
+        <button type="button" onclick="closeClientViewModal()" class="px-4 py-2 bg-brand-500 text-white rounded-xl text-xs">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PROCESSO -->
   <div id="prazoModalOverlay" class="fixed inset-0 bg-brand-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-white rounded-3xl shadow-2xl border border-brand-100 w-full max-w-2xl overflow-hidden">
+    <div class="bg-white rounded-3xl shadow-2xl border border-brand-100 w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden">
       <div class="px-6 py-4 bg-brand-50/60 border-b border-brand-100 flex items-center justify-between">
         <h3 id="prazoModalTitle" class="text-base font-bold text-brand-900">Cadastrar Processo</h3>
         <button type="button" onclick="window.closePrazoModal()" class="p-2 text-brand-400 hover:text-brand-700"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <form id="prazoForm" onsubmit="handlePrazoSubmit(event)" class="p-6 space-y-4 text-xs sm:text-sm">
+      <form id="prazoForm" onsubmit="handlePrazoSubmit(event)" class="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm">
         <input type="hidden" id="prazoId">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
@@ -457,13 +487,34 @@
             <label class="block font-medium text-brand-800 mb-1">ID do Processo (Somente Texto) *</label>
             <input type="text" id="prazoCustomId" placeholder="Ex: PROC-2026-001" required class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
           </div>
-          <div>
-            <label class="block font-medium text-brand-800 mb-1">Nº Processo Judicial *</label>
-            <input type="text" id="prazoProcesso" required placeholder="0000000-00.0000.0.00.0000" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+
+          <!-- SELEÇÃO TIPO DE PROCESSO (Judicial ou Extrajudicial) -->
+          <div class="sm:col-span-2 border-t border-brand-100 pt-3">
+            <label class="block font-medium text-brand-900 mb-2">Esfera do Processo *</label>
+            <div class="flex items-center space-x-6">
+              <label class="flex items-center space-x-2 cursor-pointer font-medium text-brand-800">
+                <input type="radio" name="esferaProcesso" id="esferaJudicial" value="Judicial" checked onchange="toggleEsferaProcesso()" class="w-4 h-4 text-brand-500">
+                <span>Judicial</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer font-medium text-brand-800">
+                <input type="radio" name="esferaProcesso" id="esferaExtrajudicial" value="Extrajudicial" onchange="toggleEsferaProcesso()" class="w-4 h-4 text-brand-500">
+                <span>Extrajudicial</span>
+              </label>
+            </div>
           </div>
-          <div class="sm:col-span-2">
-            <label class="block font-medium text-brand-800 mb-1">Vara / Tribunal *</label>
-            <input type="text" id="prazoVara" required placeholder="Ex: 2ª Vara Cível de São Paulo" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+
+          <div id="divCampoJudicial1">
+            <label class="block font-medium text-brand-800 mb-1">Nº Processo Judicial</label>
+            <input type="text" id="prazoProcesso" placeholder="0000000-00.0000.0.00.0000" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+          </div>
+          <div id="divCampoJudicial2">
+            <label class="block font-medium text-brand-800 mb-1">Vara / Tribunal</label>
+            <input type="text" id="prazoVara" placeholder="Ex: 2ª Vara Cível" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+          </div>
+
+          <div id="divCampoExtrajudicial" class="hidden sm:col-span-2">
+            <label class="block font-medium text-brand-800 mb-1">Tipo de Acordo</label>
+            <input type="text" id="prazoTipoAcordo" placeholder="Ex: Acordo Extrajudicial / Mediação" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
           </div>
           
           <div class="sm:col-span-2 border-t border-brand-100 pt-3">
@@ -481,12 +532,31 @@
             <label class="block font-medium text-brand-800 mb-1">Data Vencimento do Prazo</label>
             <input type="date" id="prazoData" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
           </div>
+
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-brand-800 mb-1">Anotações</label>
+            <textarea id="prazoAnotacoes" rows="3" placeholder="Informações gerais e anotações do processo..." class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl"></textarea>
+          </div>
         </div>
         <div class="pt-3 border-t border-brand-100 flex justify-end space-x-2">
           <button type="button" onclick="window.closePrazoModal()" class="px-4 py-2 border border-brand-200 rounded-xl text-brand-700">Cancelar</button>
           <button type="submit" class="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-medium">Salvar Processo</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VISUALIZAR PROCESSO -->
+  <div id="prazoViewModalOverlay" class="fixed inset-0 bg-brand-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl shadow-2xl border border-brand-100 w-full max-w-lg overflow-hidden">
+      <div class="px-6 py-4 bg-brand-50/60 border-b border-brand-100 flex items-center justify-between">
+        <h3 class="text-base font-bold text-brand-900">Visualizar Processo</h3>
+        <button type="button" onclick="closePrazoViewModal()" class="p-2 text-brand-400 hover:text-brand-700"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="prazoViewContent" class="p-6 space-y-3 text-xs sm:text-sm text-brand-900"></div>
+      <div class="px-6 py-3 bg-brand-50/40 border-t border-brand-100 flex justify-end">
+        <button type="button" onclick="closePrazoViewModal()" class="px-4 py-2 bg-brand-500 text-white rounded-xl text-xs">Fechar</button>
+      </div>
     </div>
   </div>
 
@@ -507,6 +577,36 @@
       } else {
         document.getElementById('divNumParcelas').classList.add('hidden');
         document.getElementById('divDiaVencimento').classList.add('hidden');
+      }
+    }
+
+    function toggleTipoContratoFields() {
+      const tipo = document.getElementById('clientTipoContrato').value;
+      const divDef = document.getElementById('divDefensoria');
+      const divPart = document.getElementById('divParticularValor');
+      if (tipo === 'Defensoria') {
+        divDef.classList.remove('hidden');
+        divPart.classList.add('hidden');
+      } else {
+        divDef.classList.add('hidden');
+        divPart.classList.remove('hidden');
+      }
+    }
+
+    function toggleEsferaProcesso() {
+      const isJudicial = document.getElementById('esferaJudicial').checked;
+      const j1 = document.getElementById('divCampoJudicial1');
+      const j2 = document.getElementById('divCampoJudicial2');
+      const ext = document.getElementById('divCampoExtrajudicial');
+
+      if (isJudicial) {
+        j1.classList.remove('hidden');
+        j2.classList.remove('hidden');
+        ext.classList.add('hidden');
+      } else {
+        j1.classList.add('hidden');
+        j2.classList.add('hidden');
+        ext.classList.remove('hidden');
       }
     }
 
@@ -565,10 +665,40 @@
       lucide.createIcons();
     }
 
-    window.openClientModal = function() {
+    window.openClientModal = function(editId = null) {
       document.getElementById('clientForm').reset();
       document.getElementById('clientId').value = '';
+      toggleTipoContratoFields();
       toggleParcelas();
+
+      if (editId) {
+        const c = clients.find(item => item.id === editId);
+        if (c) {
+          document.getElementById('clientId').value = c.id;
+          document.getElementById('clientNome').value = c.nome || '';
+          document.getElementById('clientCpfCnpj').value = c.cpfCnpj || '';
+          document.getElementById('clientTelefone').value = c.telefone || '';
+          document.getElementById('clientTelefone2').value = c.telefone2 || '';
+          document.getElementById('clientEmail').value = c.email || '';
+          document.getElementById('clientCep').value = c.cep || '';
+          document.getElementById('clientCidade').value = c.cidade || '';
+          document.getElementById('clientEstado').value = c.estado || '';
+          document.getElementById('clientComplemento').value = c.complemento || '';
+          document.getElementById('clientAnotacoes').value = c.anotacoes || '';
+          document.getElementById('clientTipoContrato').value = c.tipoContrato || 'Particular';
+          toggleTipoContratoFields();
+
+          if (c.tipoContrato === 'Defensoria') {
+            document.getElementById('clientNumOficio').value = c.numOficio || '';
+          } else {
+            document.getElementById('clientValorContrato').value = c.valorContrato || '';
+            document.getElementById('clientFormaPagamento').value = c.formaPagamento || 'A Vista';
+            toggleParcelas();
+            document.getElementById('clientNumParcelas').value = c.numParcelas || 1;
+            document.getElementById('clientDiaVencimento').value = c.diaVencimento || 10;
+          }
+        }
+      }
       document.getElementById('clientModalOverlay').classList.remove('hidden');
     };
 
@@ -576,13 +706,38 @@
       document.getElementById('clientModalOverlay').classList.add('hidden');
     };
 
+    window.viewClient = function(id) {
+      const c = clients.find(item => item.id === id);
+      if (!c) return;
+      const content = document.getElementById('clientViewContent');
+      content.innerHTML = `
+        <p><strong>Nome:</strong> ${c.nome || '—'}</p>
+        <p><strong>CPF/CNPJ:</strong> ${c.cpfCnpj || '—'}</p>
+        <p><strong>Telefone 1:</strong> ${c.telefone || '—'}</p>
+        <p><strong>Telefone 2:</strong> ${c.telefone2 || '—'}</p>
+        <p><strong>E-mail:</strong> ${c.email || '—'}</p>
+        <p><strong>CEP:</strong> ${c.cep || '—'}</p>
+        <p><strong>Cidade/UF:</strong> ${c.cidade ? c.cidade + '/' + c.estado : '—'}</p>
+        <p><strong>Complemento:</strong> ${c.complemento || '—'}</p>
+        <p><strong>Tipo de Contrato:</strong> ${c.tipoContrato || 'Particular'}</p>
+        ${c.tipoContrato === 'Defensoria' ? `<p><strong>Nº Ofício:</strong> ${c.numOficio || '—'}</p>` : `<p><strong>Valor Contrato:</strong> R$ ${(c.valorContrato || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p><p><strong>Pagamento:</strong> ${c.formaPagamento || '—'}</p>`}
+        <p><strong>Anotações:</strong> ${c.anotacoes || '—'}</p>
+      `;
+      document.getElementById('clientViewModalOverlay').classList.remove('hidden');
+    };
+
+    window.closeClientViewModal = function() {
+      document.getElementById('clientViewModalOverlay').classList.add('hidden');
+    };
+
     async function handleClientSubmit(e) {
       e.preventDefault();
       const id = document.getElementById('clientId').value || 'c_' + Date.now();
-      const valorTotal = parseFloat(document.getElementById('clientValorContrato').value) || 0;
-      const formaPagamento = document.getElementById('clientFormaPagamento').value;
-      const numParcelas = formaPagamento === 'Parcelado' ? parseInt(document.getElementById('clientNumParcelas').value) || 1 : 1;
-      const diaVencimento = parseInt(document.getElementById('clientDiaVencimento').value) || 10;
+      const tipoContrato = document.getElementById('clientTipoContrato').value;
+      const valorTotal = tipoContrato === 'Particular' ? (parseFloat(document.getElementById('clientValorContrato').value) || 0) : 0;
+      const formaPagamento = tipoContrato === 'Particular' ? document.getElementById('clientFormaPagamento').value : '';
+      const numParcelas = (tipoContrato === 'Particular' && formaPagamento === 'Parcelado') ? parseInt(document.getElementById('clientNumParcelas').value) || 1 : 1;
+      const diaVencimento = tipoContrato === 'Particular' ? parseInt(document.getElementById('clientDiaVencimento').value) || 10 : 10;
 
       const clientData = {
         nome: document.getElementById('clientNome').value,
@@ -595,6 +750,8 @@
         estado: document.getElementById('clientEstado').value.toUpperCase() || '',
         complemento: document.getElementById('clientComplemento').value || '',
         anotacoes: document.getElementById('clientAnotacoes').value || '',
+        tipoContrato: tipoContrato,
+        numOficio: tipoContrato === 'Defensoria' ? document.getElementById('clientNumOficio').value : '',
         valorContrato: valorTotal,
         formaPagamento: formaPagamento,
         numParcelas: numParcelas,
@@ -603,20 +760,21 @@
 
       await window.fsSetDoc(window.fsDoc(window.firebaseDB, 'clients', id), clientData);
 
-      // GERAÇÃO AUTOMÁTICA DE PARCELAS NO FIRESTORE
-      const valorParcela = (valorTotal / numParcelas);
-      const hoje = new Date();
-
-      for (let i = 1; i <= numParcelas; i++) {
-        const dataVenc = new Date(hoje.getFullYear(), hoje.getMonth() + (i - 1), diaVencimento);
-        const parcelaData = {
-          clienteId: id,
-          numeroParcela: `${i}/${numParcelas}`,
-          valor: valorParcela,
-          vencimento: dataVenc.toISOString().split('T')[0],
-          status: 'Pendente'
-        };
-        await window.fsSetDoc(window.fsDoc(window.firebaseDB, 'parcelas', `parc_${id}_${i}`), parcelaData);
+      // GERAÇÃO AUTOMÁTICA DE PARCELAS NO FIRESTORE SE FOR PARTICULAR
+      if (tipoContrato === 'Particular' && valorTotal > 0) {
+        const valorParcela = (valorTotal / numParcelas);
+        const hoje = new Date();
+        for (let i = 1; i <= numParcelas; i++) {
+          const dataVenc = new Date(hoje.getFullYear(), hoje.getMonth() + (i - 1), diaVencimento);
+          const parcelaData = {
+            clienteId: id,
+            numeroParcela: `${i}/${numParcelas}`,
+            valor: valorParcela,
+            vencimento: dataVenc.toISOString().split('T')[0],
+            status: 'Pendente'
+          };
+          await window.fsSetDoc(window.fsDoc(window.firebaseDB, 'parcelas', `parc_${id}_${i}`), parcelaData);
+        }
       }
 
       await loadData();
@@ -630,15 +788,12 @@
     function renderClients() {
       const tbody = document.getElementById('clientsTableBody');
       const search = document.getElementById('clientSearchInput').value.toLowerCase();
-
-      // Filtra clientes que têm pelo menos um processo ATIVO (não baixado)
       let activeClientIds = new Set(prazos.filter(p => p.status !== 'Baixado').map(p => p.clienteId));
 
       let filtered = clients.filter(c => {
-        const matchesSearch = (c.nome && c.nome.toLowerCase().includes(search)) ||
-                              (c.cpfCnpj && c.cpfCnpj.includes(search)) ||
-                              (c.email && c.email.toLowerCase().includes(search));
-        return matchesSearch;
+        return (c.nome && c.nome.toLowerCase().includes(search)) ||
+               (c.cpfCnpj && c.cpfCnpj.includes(search)) ||
+               (c.email && c.email.toLowerCase().includes(search));
       });
 
       tbody.innerHTML = filtered.map(c => {
@@ -659,32 +814,59 @@
             </div>
           </td>
           <td class="py-3.5 px-4 font-mono text-xs">${c.cpfCnpj}</td>
-          <td class="py-3.5 px-4 font-bold text-emerald-700">R$ ${(c.valorContrato || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+          <td class="py-3.5 px-4">
+            <span class="px-2 py-0.5 bg-brand-100 text-brand-900 rounded-md text-xs font-semibold">${c.tipoContrato || 'Particular'}</span>
+          </td>
           <td class="py-3.5 px-4 text-xs">
             ${c.telefone ? `<div>Tel 1: ${c.telefone}</div>` : ''}
-            ${c.telefone2 ? `<div class="text-brand-500">Tel 2: ${c.telefone2}</div>` : ''}
             ${c.email ? `<div class="text-brand-400 truncate max-w-xs">${c.email}</div>` : ''}
-            ${!c.telefone && !c.telefone2 && !c.email ? '<span class="text-slate-400">—</span>' : ''}
+            ${!c.telefone && !c.email ? '<span class="text-slate-400">—</span>' : ''}
           </td>
-          <td class="py-3.5 px-4 text-xs">
-            ${c.cidade ? `${c.cidade}/${c.estado}` : ''}
-            ${c.cep ? `<div class="text-brand-400 font-mono">CEP: ${c.cep}</div>` : ''}
-            ${c.complemento ? `<div class="text-brand-500 italic">${c.complemento}</div>` : ''}
-            ${!c.cidade && !c.cep ? '<span class="text-slate-400">—</span>' : ''}
-          </td>
-          <td class="py-3.5 px-6 text-right">
-            <button onclick="deleteClient('${c.id}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+          <td class="py-3.5 px-6 text-right space-x-1">
+            <button onclick="viewClient('${c.id}')" class="p-1.5 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100" title="Visualizar"><i data-lucide="eye" class="w-4 h-4"></i></button>
+            <button onclick="openClientModal('${c.id}')" class="p-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+            <button onclick="deleteClient('${c.id}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
           </td>
         </tr>
       `}).join('');
       lucide.createIcons();
     }
 
-    // PROCESSOS (ANTIGO PRAZOS)
-    window.openPrazoModal = function() {
+    // PROCESSOS
+    window.openPrazoModal = function(editId = null) {
       document.getElementById('prazoForm').reset();
       document.getElementById('prazoId').value = '';
+      document.getElementById('esferaJudicial').checked = true;
+      toggleEsferaProcesso();
       togglePrazoFields();
+
+      if (editId) {
+        const p = prazos.find(item => item.id === editId);
+        if (p) {
+          document.getElementById('prazoId').value = p.id;
+          document.getElementById('prazoClienteId').value = p.clienteId || '';
+          document.getElementById('prazoCustomId').value = p.customId || '';
+          
+          if (p.esfera === 'Extrajudicial') {
+            document.getElementById('esferaExtrajudicial').checked = true;
+            toggleEsferaProcesso();
+            document.getElementById('prazoTipoAcordo').value = p.tipoAcordo || '';
+          } else {
+            document.getElementById('esferaJudicial').checked = true;
+            toggleEsferaProcesso();
+            document.getElementById('prazoProcesso').value = p.processo || '';
+            document.getElementById('prazoVara').value = p.vara || '';
+          }
+
+          document.getElementById('prazoHasPrazo').checked = !!p.hasPrazo;
+          togglePrazoFields();
+          if (p.hasPrazo) {
+            document.getElementById('prazoTipo').value = p.tipo || '';
+            document.getElementById('prazoData').value = p.data || '';
+          }
+          document.getElementById('prazoAnotacoes').value = p.anotacoes || '';
+        }
+      }
       document.getElementById('prazoModalOverlay').classList.remove('hidden');
     };
 
@@ -692,25 +874,51 @@
       document.getElementById('prazoModalOverlay').classList.add('hidden');
     };
 
+    window.viewProcesso = function(id) {
+      const p = prazos.find(item => item.id === id);
+      if (!p) return;
+      const cli = clients.find(c => c.id === p.clienteId);
+      const content = document.getElementById('prazoViewContent');
+      content.innerHTML = `
+        <p><strong>ID Processo:</strong> ${p.customId || '—'}</p>
+        <p><strong>Cliente:</strong> ${cli ? cli.nome : '—'}</p>
+        <p><strong>Esfera:</strong> ${p.esfera || 'Judicial'}</p>
+        ${p.esfera === 'Extrajudicial' ? `<p><strong>Tipo de Acordo:</strong> ${p.tipoAcordo || '—'}</p>` : `<p><strong>Nº Processo:</strong> ${p.processo || '—'}</p><p><strong>Vara/Tribunal:</strong> ${p.vara || '—'}</p>`}
+        <p><strong>Possui Prazo:</strong> ${p.hasPrazo ? 'Sim' : 'Não'}</p>
+        ${p.hasPrazo ? `<p><strong>Tipo de Prazo:</strong> ${p.tipo || '—'}</p><p><strong>Vencimento:</strong> ${formatDate(p.data)}</p>` : ''}
+        <p><strong>Status:</strong> ${p.status || 'Ativo'}</p>
+        <p><strong>Anotações:</strong> ${p.anotacoes || '—'}</p>
+      `;
+      document.getElementById('prazoViewModalOverlay').classList.remove('hidden');
+    };
+
+    window.closePrazoViewModal = function() {
+      document.getElementById('prazoViewModalOverlay').classList.add('hidden');
+    };
+
     async function handlePrazoSubmit(e) {
       e.preventDefault();
       const id = document.getElementById('prazoId').value || 'p_' + Date.now();
       const hasPrazo = document.getElementById('prazoHasPrazo').checked;
+      const isJudicial = document.getElementById('esferaJudicial').checked;
 
       const prazoData = {
         clienteId: document.getElementById('prazoClienteId').value,
         customId: document.getElementById('prazoCustomId').value,
-        processo: document.getElementById('prazoProcesso').value,
-        vara: document.getElementById('prazoVara').value,
+        esfera: isJudicial ? 'Judicial' : 'Extrajudicial',
+        processo: isJudicial ? (document.getElementById('prazoProcesso').value || '') : '',
+        vara: isJudicial ? (document.getElementById('prazoVara').value || '') : '',
+        tipoAcordo: !isJudicial ? (document.getElementById('prazoTipoAcordo').value || '') : '',
         hasPrazo: hasPrazo,
         tipo: hasPrazo ? document.getElementById('prazoTipo').value : '',
         data: hasPrazo ? document.getElementById('prazoData').value : '',
+        anotacoes: document.getElementById('prazoAnotacoes').value || '',
         status: 'Ativo'
       };
 
       await window.fsSetDoc(window.fsDoc(window.firebaseDB, 'prazos', id), prazoData);
       await loadData();
-      showToast('Processo cadastrado com sucesso!', 'success');
+      showToast('Processo salvo com sucesso!', 'success');
       window.closePrazoModal();
       renderPrazos();
       updateDashboard();
@@ -777,16 +985,15 @@
           <tr class="border-b border-brand-100 hover:bg-brand-50/40 ${p.status === 'Baixado' ? 'opacity-60 bg-slate-50/50' : ''}">
             <td class="py-3.5 px-6 font-semibold">
               <span class="px-2 py-0.5 bg-brand-100 text-brand-900 rounded-md font-mono text-xs">${p.customId || 'SEM ID'}</span>
-              <div class="text-xs text-brand-700 font-mono mt-1">${p.processo}</div>
+              <div class="text-xs text-brand-700 font-mono mt-1">${p.esfera === 'Extrajudicial' ? (p.tipoAcordo || 'Extrajudicial') : (p.processo || 'Proc. não informado')}</div>
             </td>
             <td class="py-3.5 px-4 font-medium">
               ${cli ? cli.nome : 'Cliente Desconhecido'}
-              <div class="text-xs text-brand-500 font-normal">${p.vara}</div>
+              <div class="text-xs text-brand-500 font-normal">${p.esfera === 'Extrajudicial' ? 'Acordo Extrajudicial' : (p.vara || '')}</div>
+              ${p.anotacoes ? `<div class="text-[11px] text-brand-400 italic truncate max-w-xs">${p.anotacoes}</div>` : ''}
             </td>
             <td class="py-3.5 px-4">
-              ${p.hasPrazo 
-                ? `<span class="text-emerald-700 font-medium flex items-center"><i data-lucide="check" class="w-4 h-4 mr-1"></i> Sim</span>`
-                : `<span class="text-slate-400 font-medium flex items-center"><i data-lucide="minus" class="w-4 h-4 mr-1"></i> Não</span>`}
+              <span class="px-2 py-0.5 bg-brand-50 text-brand-700 rounded text-xs font-medium">${p.esfera || 'Judicial'}</span>
             </td>
             <td class="py-3.5 px-4">
               ${p.hasPrazo 
@@ -795,9 +1002,9 @@
             </td>
             <td class="py-3.5 px-4">${statusBadge}</td>
             <td class="py-3.5 px-6 text-right space-x-1">
-              ${p.status !== 'Baixado' 
-                ? `<button onclick="darBaixaProcesso('${p.id}')" class="px-3 py-1 bg-slate-700 hover:bg-slate-800 text-white text-xs rounded-xl font-medium transition-all" title="Dar baixa no processo">Dar Baixa</button>` 
-                : `<span class="text-xs text-slate-400 italic">Encerrado</span>`}
+              <button onclick="viewProcesso('${p.id}')" class="p-1.5 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100" title="Visualizar"><i data-lucide="eye" class="w-4 h-4"></i></button>
+              <button onclick="openPrazoModal('${p.id}')" class="p-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
+              ${p.status !== 'Baixado' ? `<button onclick="darBaixaProcesso('${p.id}')" class="px-2.5 py-1 bg-slate-700 hover:bg-slate-800 text-white text-xs rounded-xl font-medium transition-all" title="Dar baixa">Dar Baixa</button>` : ''}
               <button onclick="deleteProcesso('${p.id}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             </td>
           </tr>
@@ -825,6 +1032,17 @@
         renderClients();
         updateDashboard();
         showToast('Processo excluído com sucesso!', 'success');
+      }
+    }
+
+    async function deleteClient(id) {
+      if (confirm('Deseja excluir este cliente e seus registros?')) {
+        await window.fsDeleteDoc(window.fsDoc(window.firebaseDB, 'clients', id));
+        await loadData();
+        renderClients();
+        renderFinanceiro();
+        renderPrazos();
+        updateDashboard();
       }
     }
 
@@ -893,17 +1111,6 @@
       }
     }
 
-    async function deleteClient(id) {
-      if (confirm('Deseja excluir este cliente e seus registros?')) {
-        await window.fsDeleteDoc(window.fsDoc(window.firebaseDB, 'clients', id));
-        await loadData();
-        renderClients();
-        renderFinanceiro();
-        renderPrazos();
-        updateDashboard();
-      }
-    }
-
     function populateClientSelects() {
       const select = document.getElementById('prazoClienteId');
       if (select) {
@@ -913,9 +1120,16 @@
 
     function updateDashboard() {
       const activeClientsCount = new Set(prazos.filter(p => p.status !== 'Baixado').map(p => p.clienteId)).size;
-      document.getElementById('dashTotalClientes').innerText = activeClientsCount;
+      document.getElementById('dashTotalClientes').innerText = clients.length;
 
-      const hojeStr = new Date().toISOString().split('T')[0];
+      const hojeObj = new Date();
+      const hojeStr = hojeObj.toISOString().split('T')[0];
+      
+      // Data daqui a 15 dias
+      const dataLimiteObj = new Date();
+      dataLimiteObj.setDate(hojeObj.getDate() + 15);
+      const dataLimiteStr = dataLimiteObj.toISOString().split('T')[0];
+
       const prazosHoje = prazos.filter(p => p.status !== 'Baixado' && p.hasPrazo && p.data === hojeStr).length;
       const prazosVencidos = prazos.filter(p => p.status !== 'Baixado' && p.hasPrazo && p.data < hojeStr).length;
       const processosAtivos = prazos.filter(p => p.status !== 'Baixado').length;
@@ -925,10 +1139,11 @@
       document.getElementById('dashPrazosPendentes').innerText = processosAtivos;
 
       const recentList = document.getElementById('dashRecentPrazosList');
-      const proximos = prazos.filter(p => p.status !== 'Baixado' && p.hasPrazo && p.data >= hojeStr).sort((a,b) => a.data.localeCompare(b.data)).slice(0, 5);
+      // Filtra prazos a vencer entre hoje e os próximos 15 dias
+      const proximos = prazos.filter(p => p.status !== 'Baixado' && p.hasPrazo && p.data >= hojeStr && p.data <= dataLimiteStr).sort((a,b) => a.data.localeCompare(b.data));
 
       if (proximos.length === 0) {
-        recentList.innerHTML = `<p class="text-xs text-slate-400 py-2">Nenhum prazo próximo cadastrado.</p>`;
+        recentList.innerHTML = `<p class="text-xs text-slate-400 py-2">Nenhum prazo a vencer nos próximos 15 dias.</p>`;
       } else {
         recentList.innerHTML = proximos.map(p => {
           const cli = clients.find(c => c.id === p.clienteId);
@@ -936,7 +1151,7 @@
             <div class="flex items-center justify-between p-3 bg-brand-50/50 rounded-xl">
               <div>
                 <p class="font-semibold text-xs text-brand-900">${p.customId} - ${p.tipo}</p>
-                <p class="text-[11px] text-brand-500">${cli ? cli.nome : 'Cliente'} (${p.processo})</p>
+                <p class="text-[11px] text-brand-500">${cli ? cli.nome : 'Cliente'} (${p.esfera === 'Extrajudicial' ? p.tipoAcordo : p.processo})</p>
               </div>
               <span class="text-xs font-mono font-medium text-brand-800 bg-white px-2 py-1 rounded-lg border border-brand-200">${formatDate(p.data)}</span>
             </div>
