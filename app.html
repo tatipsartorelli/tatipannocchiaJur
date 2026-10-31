@@ -371,7 +371,7 @@
           </div>
           <div>
             <label class="block font-medium text-brand-800 mb-1">CPF ou CNPJ *</label>
-            <input type="text" id="clientCpfCnpj" required maxlength="18" placeholder="Digite apenas números" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+            <input type="text" id="clientCpfCnpj" required maxlength="18" oninput="handleCpfCnpjInput(this)" placeholder="000.000.000-00 ou 00.000.000/0000-00" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
           </div>
           <div>
             <label class="block font-medium text-brand-800 mb-1">Telefone Principal (WhatsApp)</label>
@@ -384,6 +384,10 @@
           <div>
             <label class="block font-medium text-brand-800 mb-1">E-mail</label>
             <input type="email" id="clientEmail" placeholder="cliente@email.com" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-brand-800 mb-1">Endereço (Rua, Logradouro, Número)</label>
+            <input type="text" id="clientEndereco" placeholder="Ex: Av. Paulista, 1000" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
           </div>
           <div>
             <label class="block font-medium text-brand-800 mb-1">CEP</label>
@@ -569,6 +573,34 @@
     let parcelas = [];
     let currentPrazoFilter = 'todos';
 
+    // FUNÇÃO AUXILIAR DE MÁSCARA/FORMATAÇÃO AUTOMÁTICA DE CPF E CNPJ
+    function formatCpfCnpj(value) {
+      if (!value) return '';
+      // Remove tudo que não for dígito
+      const digits = String(value).replace(/\D/g, '');
+
+      if (digits.length <= 11) {
+        // Formata como CPF: 000.000.000-00
+        return digits
+          .slice(0, 11)
+          .replace(/(\d{3})(\d)/, '$1.$2')
+          .replace(/(\d{3})(\d)/, '$1.$2')
+          .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      } else {
+        // Formata como CNPJ: 00.000.000/0000-00
+        return digits
+          .slice(0, 14)
+          .replace(/^(\d{2})(\d)/, '$1.$2')
+          .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+          .replace(/\.(\d{3})(\d)/, '.$1/$2')
+          .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+      }
+    }
+
+    function handleCpfCnpjInput(inputEl) {
+      inputEl.value = formatCpfCnpj(inputEl.value);
+    }
+
     function toggleParcelas() {
       const forma = document.getElementById('clientFormaPagamento').value;
       if (forma === 'Parcelado') {
@@ -676,10 +708,11 @@
         if (c) {
           document.getElementById('clientId').value = c.id;
           document.getElementById('clientNome').value = c.nome || '';
-          document.getElementById('clientCpfCnpj').value = c.cpfCnpj || '';
+          document.getElementById('clientCpfCnpj').value = formatCpfCnpj(c.cpfCnpj || '');
           document.getElementById('clientTelefone').value = c.telefone || '';
           document.getElementById('clientTelefone2').value = c.telefone2 || '';
           document.getElementById('clientEmail').value = c.email || '';
+          document.getElementById('clientEndereco').value = c.endereco || '';
           document.getElementById('clientCep').value = c.cep || '';
           document.getElementById('clientCidade').value = c.cidade || '';
           document.getElementById('clientEstado').value = c.estado || '';
@@ -712,10 +745,11 @@
       const content = document.getElementById('clientViewContent');
       content.innerHTML = `
         <p><strong>Nome:</strong> ${c.nome || '—'}</p>
-        <p><strong>CPF/CNPJ:</strong> ${c.cpfCnpj || '—'}</p>
+        <p><strong>CPF/CNPJ:</strong> ${formatCpfCnpj(c.cpfCnpj) || '—'}</p>
         <p><strong>Telefone 1:</strong> ${c.telefone || '—'}</p>
         <p><strong>Telefone 2:</strong> ${c.telefone2 || '—'}</p>
         <p><strong>E-mail:</strong> ${c.email || '—'}</p>
+        <p><strong>Endereço:</strong> ${c.endereco || '—'}</p>
         <p><strong>CEP:</strong> ${c.cep || '—'}</p>
         <p><strong>Cidade/UF:</strong> ${c.cidade ? c.cidade + '/' + c.estado : '—'}</p>
         <p><strong>Complemento:</strong> ${c.complemento || '—'}</p>
@@ -741,10 +775,11 @@
 
       const clientData = {
         nome: document.getElementById('clientNome').value,
-        cpfCnpj: document.getElementById('clientCpfCnpj').value,
+        cpfCnpj: formatCpfCnpj(document.getElementById('clientCpfCnpj').value),
         telefone: document.getElementById('clientTelefone').value || '',
         telefone2: document.getElementById('clientTelefone2').value || '',
         email: document.getElementById('clientEmail').value || '',
+        endereco: document.getElementById('clientEndereco').value || '',
         cep: document.getElementById('clientCep').value || '',
         cidade: document.getElementById('clientCidade').value || '',
         estado: document.getElementById('clientEstado').value.toUpperCase() || '',
@@ -791,8 +826,11 @@
       let activeClientIds = new Set(prazos.filter(p => p.status !== 'Baixado').map(p => p.clienteId));
 
       let filtered = clients.filter(c => {
+        const rawCpf = (c.cpfCnpj || '').replace(/\D/g, '');
+        const formattedCpf = formatCpfCnpj(c.cpfCnpj || '').toLowerCase();
         return (c.nome && c.nome.toLowerCase().includes(search)) ||
-               (c.cpfCnpj && c.cpfCnpj.includes(search)) ||
+               (rawCpf && rawCpf.includes(search)) ||
+               (formattedCpf && formattedCpf.includes(search)) ||
                (c.email && c.email.toLowerCase().includes(search));
       });
 
@@ -813,7 +851,7 @@
               </div>
             </div>
           </td>
-          <td class="py-3.5 px-4 font-mono text-xs">${c.cpfCnpj}</td>
+          <td class="py-3.5 px-4 font-mono text-xs">${formatCpfCnpj(c.cpfCnpj) || '—'}</td>
           <td class="py-3.5 px-4">
             <span class="px-2 py-0.5 bg-brand-100 text-brand-900 rounded-md text-xs font-semibold">${c.tipoContrato || 'Particular'}</span>
           </td>
