@@ -375,11 +375,23 @@
           </div>
           <div>
             <label class="block font-medium text-brand-800 mb-1">Telefone Principal (WhatsApp)</label>
-            <input type="text" id="clientTelefone" placeholder="(11) 12345-6789" maxlength="15" oninput="formatPhoneInput(this)" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+            <input type="text" id="clientTelefone" placeholder="(12) 34567-8900" maxlength="15" oninput="formatPhoneInput(this)" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
           </div>
           <div>
             <label class="block font-medium text-brand-800 mb-1">Telefone Secundário</label>
-            <input type="text" id="clientTelefone2" placeholder="(11) 12345-6789" maxlength="15" oninput="formatPhoneInput(this)" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+            <input type="text" id="clientTelefone2" placeholder="(12) 34567-8900" maxlength="15" oninput="formatPhoneInput(this)" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block font-medium text-brand-800 mb-1">Profissão</label>
+            <input type="text" id="clientProfissao" placeholder="Ex.: ADVOGADO(A)" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block font-medium text-brand-800 mb-1">Estado Civil</label>
+            <input type="text" id="clientEstadoCivil" placeholder="Ex.: CASADO(A)" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+          </div>
+          <div>
+            <label class="block font-medium text-brand-800 mb-1">Bairro</label>
+            <input type="text" id="clientBairro" placeholder="Nome do bairro" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
           </div>
           <div>
             <label class="block font-medium text-brand-800 mb-1">E-mail</label>
@@ -497,6 +509,10 @@
             <label class="block font-medium text-brand-800 mb-1">Cliente *</label>
             <select id="prazoClienteId" required class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl"></select>
           </div>
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-brand-800 mb-1">Parte Contrária</label>
+            <input type="text" id="prazoParteContraria" placeholder="Nome da parte contrária" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+          </div>
           <div>
             <label class="block font-medium text-brand-800 mb-1">ID do Processo (Somente Texto) *</label>
             <input type="text" id="prazoCustomId" placeholder="Ex: PROC-2026-001" required class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
@@ -519,7 +535,7 @@
 
           <div id="divCampoJudicial1">
             <label class="block font-medium text-brand-800 mb-1">Nº Processo Judicial</label>
-            <input type="text" id="prazoProcesso" placeholder="0000000-00.0000.0.00.0000" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+            <input type="text" id="prazoProcesso" inputmode="numeric" maxlength="25" oninput="formatProcessoJudicialInput(this)" placeholder="1234567-12.1234.1.12.1234" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
           </div>
           <div id="divCampoJudicial2">
             <label class="block font-medium text-brand-800 mb-1">Vara / Tribunal</label>
@@ -615,6 +631,22 @@
       if (typeof value === 'number') return value;
       const digits = String(value || '').replace(/[^\d,-]/g, '').replace(/\./g, '').replace(',', '.');
       return Number.parseFloat(digits) || 0;
+    }
+
+    // Formata o número CNJ enquanto o usuário digita: NNNNNNN-DD.AAAA.J.TR.OOOO.
+    function formatProcessoJudicial(value) {
+      const d = String(value || '').replace(/\D/g, '').slice(0, 20);
+      let out = d.slice(0, 7);
+      if (d.length > 7) out += '-' + d.slice(7, 9);
+      if (d.length > 9) out += '.' + d.slice(9, 13);
+      if (d.length > 13) out += '.' + d.slice(13, 14);
+      if (d.length > 14) out += '.' + d.slice(14, 16);
+      if (d.length > 16) out += '.' + d.slice(16, 20);
+      return out;
+    }
+
+    function formatProcessoJudicialInput(input) {
+      input.value = formatProcessoJudicial(input.value);
     }
 
     function formatPhoneNumber(value) {
@@ -807,6 +839,9 @@
           document.getElementById('clientCpfCnpj').value = formatCpfCnpj(c.cpfCnpj || '');
           document.getElementById('clientTelefone').value = formatPhoneNumber(c.telefone || '');
           document.getElementById('clientTelefone2').value = formatPhoneNumber(c.telefone2 || '');
+          document.getElementById('clientProfissao').value = c.profissao || '';
+          document.getElementById('clientEstadoCivil').value = c.estadoCivil || '';
+          document.getElementById('clientBairro').value = c.bairro || '';
           document.getElementById('clientEmail').value = c.email || '';
           document.getElementById('clientEndereco').value = c.endereco || '';
           document.getElementById('clientCep').value = c.cep || '';
@@ -853,6 +888,9 @@
         <p><strong>CPF/CNPJ:</strong> ${formatCpfCnpj(c.cpfCnpj) || '—'}</p>
         <p><strong>Telefone 1:</strong> ${formatPhoneNumber(c.telefone) || '—'}</p>
         <p><strong>Telefone 2:</strong> ${formatPhoneNumber(c.telefone2) || '—'}</p>
+        <p><strong>Profissão:</strong> ${c.profissao || '—'}</p>
+        <p><strong>Estado Civil:</strong> ${c.estadoCivil || '—'}</p>
+        <p><strong>Bairro:</strong> ${c.bairro || '—'}</p>
         <p><strong>E-mail:</strong> ${c.email || '—'}</p>
         <p><strong>Endereço:</strong> ${c.endereco || '—'}</p>
         <p><strong>CEP:</strong> ${c.cep || '—'}</p>
@@ -911,6 +949,9 @@
         cpfCnpj: formatCpfCnpj(document.getElementById('clientCpfCnpj').value),
         telefone: document.getElementById('clientTelefone').value || '',
         telefone2: document.getElementById('clientTelefone2').value || '',
+        profissao: document.getElementById('clientProfissao').value.toLocaleUpperCase('pt-BR') || '',
+        estadoCivil: document.getElementById('clientEstadoCivil').value.toLocaleUpperCase('pt-BR') || '',
+        bairro: document.getElementById('clientBairro').value.toLocaleUpperCase('pt-BR') || '',
         email: document.getElementById('clientEmail').value || '',
         endereco: document.getElementById('clientEndereco').value || '',
         cep: document.getElementById('clientCep').value || '',
@@ -1039,6 +1080,7 @@
         if (p) {
           document.getElementById('prazoId').value = p.id;
           document.getElementById('prazoClienteId').value = p.clienteId || '';
+          document.getElementById('prazoParteContraria').value = p.parteContraria || '';
           document.getElementById('prazoCustomId').value = p.customId || '';
           
           if (p.esfera === 'Extrajudicial') {
@@ -1048,7 +1090,7 @@
           } else {
             document.getElementById('esferaJudicial').checked = true;
             toggleEsferaProcesso();
-            document.getElementById('prazoProcesso').value = p.processo || '';
+            document.getElementById('prazoProcesso').value = formatProcessoJudicial(p.processo || '');
             document.getElementById('prazoVara').value = p.vara || '';
           }
 
@@ -1076,6 +1118,7 @@
       content.innerHTML = `
         <p><strong>ID Processo:</strong> ${p.customId || '—'}</p>
         <p><strong>Cliente:</strong> ${cli ? cli.nome : '—'}</p>
+        <p><strong>Parte Contrária:</strong> ${p.parteContraria || '—'}</p>
         <p><strong>Esfera:</strong> ${p.esfera || 'Judicial'}</p>
         ${p.esfera === 'Extrajudicial' ? `<p><strong>Tipo de Acordo:</strong> ${p.tipoAcordo || '—'}</p>` : `<p><strong>Nº Processo:</strong> ${p.processo || '—'}</p><p><strong>Vara/Tribunal:</strong> ${p.vara || '—'}</p>`}
         <p><strong>Possui Prazo:</strong> ${p.hasPrazo ? 'Sim' : 'Não'}</p>
@@ -1098,9 +1141,10 @@
 
       const prazoData = {
         clienteId: document.getElementById('prazoClienteId').value,
+        parteContraria: document.getElementById('prazoParteContraria').value.toLocaleUpperCase('pt-BR') || '',
         customId: document.getElementById('prazoCustomId').value,
         esfera: isJudicial ? 'Judicial' : 'Extrajudicial',
-        processo: isJudicial ? (document.getElementById('prazoProcesso').value || '') : '',
+        processo: isJudicial ? formatProcessoJudicial(document.getElementById('prazoProcesso').value || '') : '',
         vara: isJudicial ? (document.getElementById('prazoVara').value || '') : '',
         tipoAcordo: !isJudicial ? (document.getElementById('prazoTipoAcordo').value || '') : '',
         hasPrazo: hasPrazo,
@@ -1183,6 +1227,7 @@
             </td>
             <td class="py-3.5 px-4 font-medium">
               ${cli ? cli.nome : 'Cliente Desconhecido'}
+              ${p.parteContraria ? `<div class="text-xs text-brand-600 font-normal">Parte Contrária: ${p.parteContraria}</div>` : ''}
               <div class="text-xs text-brand-500 font-normal">${p.esfera === 'Extrajudicial' ? 'Acordo Extrajudicial' : (p.vara || '')}</div>
               ${p.anotacoes ? `<div class="text-[11px] text-brand-400 italic truncate max-w-xs">${p.anotacoes}</div>` : ''}
             </td>
