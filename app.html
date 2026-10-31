@@ -431,7 +431,7 @@
           <div id="divParticularValor" class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block font-medium text-brand-800 mb-1">Valor Total do Contrato (R$)</label>
-              <input type="number" step="0.01" id="clientValorContrato" placeholder="Ex: 5000.00" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+              <input type="text" inputmode="decimal" id="clientValorContrato" placeholder="R$ 5.000,00" autocomplete="off" oninput="formatCurrencyInput(this)" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
             </div>
             <div>
               <label class="block font-medium text-brand-800 mb-1">Forma de Pagamento</label>
@@ -442,11 +442,21 @@
             </div>
             <div id="divNumParcelas" class="hidden">
               <label class="block font-medium text-brand-800 mb-1">Nº de Parcelas</label>
-              <input type="number" id="clientNumParcelas" min="1" max="60" value="1" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+              <input type="number" id="clientNumParcelas" min="1" max="60" value="1" oninput="toggleParcelasPersonalizadas()" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
             </div>
             <div id="divDiaVencimento" class="hidden">
               <label class="block font-medium text-brand-800 mb-1">Dia do Vencimento Mensal</label>
-              <input type="number" id="clientDiaVencimento" min="1" max="31" value="10" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+              <input type="text" id="clientDiaVencimento" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" value="" oninput="formatDateInput(this)" class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+            </div>
+            <div id="divTipoParcelas" class="hidden sm:col-span-2 rounded-xl border border-brand-200 p-3">
+              <p class="font-medium text-brand-800 mb-2">Como deseja distribuir o valor das parcelas?</p>
+              <label class="flex items-start gap-2 mb-2 cursor-pointer">
+                <input type="checkbox" id="clientParcelasValoresDiferentes" onchange="toggleParcelasPersonalizadas()" class="mt-0.5 rounded">
+                <span>Definir valores diferentes para cada parcela</span>
+              </label>
+              <p id="parcelasMesmoValorInfo" class="text-xs text-brand-500">Desmarcado: o valor total será dividido igualmente entre as parcelas.</p>
+              <div id="divValoresParcelas" class="hidden mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+              <p id="parcelasSomaInfo" class="mt-2 text-xs text-brand-600"></p>
             </div>
           </div>
         </div>
@@ -601,15 +611,86 @@
       inputEl.value = formatCpfCnpj(inputEl.value);
     }
 
+    function parseCurrencyBR(value) {
+      if (typeof value === 'number') return value;
+      const digits = String(value || '').replace(/[^\d,-]/g, '').replace(/\./g, '').replace(',', '.');
+      return Number.parseFloat(digits) || 0;
+    }
+
+    function formatCurrencyInput(input) {
+      const digits = input.value.replace(/\D/g, '');
+      if (!digits) { input.value = ''; updateParcelasSoma(); return; }
+      const value = Number(digits) / 100;
+      input.value = value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      updateParcelasSoma();
+    }
+
+    function formatCurrencyBR(value) {
+      return (Number(value) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function formatDateInput(input) {
+      const digits = input.value.replace(/\D/g, '').slice(0, 8);
+      input.value = digits.length > 4 ? digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4)
+        : digits.length > 2 ? digits.slice(0,2) + '/' + digits.slice(2) : digits;
+    }
+
+    function parseDateBR(value) {
+      const match = String(value || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!match) return null;
+      const day = Number(match[1]), month = Number(match[2]), year = Number(match[3]);
+      const date = new Date(year, month - 1, day);
+      if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+      return date;
+    }
+
+    function toggleParcelasPersonalizadas() {
+      const forma = document.getElementById('clientFormaPagamento').value;
+      const count = Math.max(1, Math.min(60, parseInt(document.getElementById('clientNumParcelas').value, 10) || 1));
+      const custom = document.getElementById('clientParcelasValoresDiferentes').checked;
+      const container = document.getElementById('divValoresParcelas');
+      document.getElementById('divTipoParcelas').classList.toggle('hidden', forma !== 'Parcelado' || count <= 1);
+      document.getElementById('parcelasMesmoValorInfo').textContent = custom
+        ? 'Informe o valor de cada parcela abaixo.'
+        : 'O valor total será dividido igualmente entre as parcelas.';
+      container.classList.toggle('hidden', !custom || forma !== 'Parcelado');
+      if (custom && forma === 'Parcelado') {
+        const oldValues = [...container.querySelectorAll('input')].map(input => input.value);
+        container.innerHTML = Array.from({length: count}, (_, i) => `
+          <div>
+            <label class="block font-medium text-brand-800 mb-1">Valor da parcela ${i + 1} (R$)</label>
+            <input type="text" inputmode="decimal" data-parcela-valor="${i + 1}" value="${oldValues[i] || ''}"
+              placeholder="R$ 0,00" oninput="formatCurrencyInput(this); updateParcelasSoma()"
+              class="w-full px-3.5 py-2 bg-brand-50/30 border border-brand-200 rounded-xl">
+          </div>`).join('');
+      }
+      updateParcelasSoma();
+    }
+
+    function updateParcelasSoma() {
+      const info = document.getElementById('parcelasSomaInfo');
+      if (!info) return;
+      const custom = document.getElementById('clientParcelasValoresDiferentes')?.checked;
+      const fields = [...document.querySelectorAll('[data-parcela-valor]')];
+      if (!custom || !fields.length) { info.textContent = ''; return; }
+      const sum = fields.reduce((total, input) => total + parseCurrencyBR(input.value), 0);
+      const total = parseCurrencyBR(document.getElementById('clientValorContrato').value);
+      const diff = Math.round((total - sum) * 100) / 100;
+      info.textContent = `Soma das parcelas: ${formatCurrencyBR(sum)} · ${Math.abs(diff) < 0.01 ? 'Valor confere com o contrato.' : `Diferença para o total: ${formatCurrencyBR(diff)}.`}`;
+      info.className = `mt-2 text-xs ${Math.abs(diff) < 0.01 ? 'text-emerald-600' : 'text-amber-600'}`;
+    }
+
     function toggleParcelas() {
       const forma = document.getElementById('clientFormaPagamento').value;
-      if (forma === 'Parcelado') {
-        document.getElementById('divNumParcelas').classList.remove('hidden');
-        document.getElementById('divDiaVencimento').classList.remove('hidden');
-      } else {
-        document.getElementById('divNumParcelas').classList.add('hidden');
-        document.getElementById('divDiaVencimento').classList.add('hidden');
+      const parcelado = forma === 'Parcelado';
+      document.getElementById('divNumParcelas').classList.toggle('hidden', !parcelado);
+      document.getElementById('divDiaVencimento').classList.toggle('hidden', !parcelado);
+      if (!document.getElementById('clientDiaVencimento').value) {
+        const hoje = new Date();
+        hoje.setDate(10);
+        document.getElementById('clientDiaVencimento').value = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
       }
+      toggleParcelasPersonalizadas();
     }
 
     function toggleTipoContratoFields() {
@@ -724,11 +805,20 @@
           if (c.tipoContrato === 'Defensoria') {
             document.getElementById('clientNumOficio').value = c.numOficio || '';
           } else {
-            document.getElementById('clientValorContrato').value = c.valorContrato || '';
+            document.getElementById('clientValorContrato').value = c.valorContrato ? formatCurrencyBR(c.valorContrato) : '';
             document.getElementById('clientFormaPagamento').value = c.formaPagamento || 'A Vista';
-            toggleParcelas();
             document.getElementById('clientNumParcelas').value = c.numParcelas || 1;
-            document.getElementById('clientDiaVencimento').value = c.diaVencimento || 10;
+            document.getElementById('clientDiaVencimento').value = c.dataPrimeiroVencimento ||
+              (typeof c.diaVencimento === 'string' && c.diaVencimento.includes('/') ? c.diaVencimento : '');
+            document.getElementById('clientParcelasValoresDiferentes').checked = !!c.valoresParcelasDiferentes;
+            toggleParcelas();
+            if (c.valoresParcelasDiferentes && Array.isArray(c.valoresParcelas)) {
+              toggleParcelasPersonalizadas();
+              [...document.querySelectorAll('[data-parcela-valor]')].forEach((input, i) => {
+                input.value = c.valoresParcelas[i] != null ? formatCurrencyBR(c.valoresParcelas[i]) : '';
+              });
+              updateParcelasSoma();
+            }
           }
         }
       }
@@ -768,11 +858,39 @@
       e.preventDefault();
       const id = document.getElementById('clientId').value || 'c_' + Date.now();
       const tipoContrato = document.getElementById('clientTipoContrato').value;
-      const valorTotal = tipoContrato === 'Particular' ? (parseFloat(document.getElementById('clientValorContrato').value) || 0) : 0;
+      const valorTotal = tipoContrato === 'Particular' ? parseCurrencyBR(document.getElementById('clientValorContrato').value) : 0;
       const formaPagamento = tipoContrato === 'Particular' ? document.getElementById('clientFormaPagamento').value : '';
-      const numParcelas = (tipoContrato === 'Particular' && formaPagamento === 'Parcelado') ? parseInt(document.getElementById('clientNumParcelas').value) || 1 : 1;
-      const diaVencimento = tipoContrato === 'Particular' ? parseInt(document.getElementById('clientDiaVencimento').value) || 10 : 10;
+      const numParcelas = (tipoContrato === 'Particular' && formaPagamento === 'Parcelado')
+        ? Math.max(1, Math.min(60, parseInt(document.getElementById('clientNumParcelas').value, 10) || 1)) : 1;
+      const customValues = document.getElementById('clientParcelasValoresDiferentes').checked && formaPagamento === 'Parcelado' && numParcelas > 1;
+      const valoresParcelas = customValues
+        ? [...document.querySelectorAll('[data-parcela-valor]')].map(input => parseCurrencyBR(input.value))
+        : [];
+      let dataBase = null;
 
+      if (tipoContrato === 'Particular' && formaPagamento === 'Parcelado') {
+        dataBase = parseDateBR(document.getElementById('clientDiaVencimento').value);
+        if (!dataBase) {
+          showToast('Informe uma data válida para o primeiro vencimento (dd/mm/aaaa).', 'error');
+          document.getElementById('clientDiaVencimento').focus();
+          return;
+        }
+        if (customValues) {
+          if (valoresParcelas.length !== numParcelas || valoresParcelas.some(v => v <= 0)) {
+            showToast('Informe um valor maior que zero para cada parcela.', 'error');
+            return;
+          }
+          const soma = Math.round(valoresParcelas.reduce((a, b) => a + b, 0) * 100) / 100;
+          if (Math.abs(soma - valorTotal) >= 0.01) {
+            showToast('A soma das parcelas deve ser igual ao valor total do contrato.', 'error');
+            return;
+          }
+        }
+      }
+
+      const dataPrimeiroVencimento = dataBase
+        ? `${String(dataBase.getDate()).padStart(2,'0')}/${String(dataBase.getMonth()+1).padStart(2,'0')}/${dataBase.getFullYear()}`
+        : '';
       const clientData = {
         nome: document.getElementById('clientNome').value,
         cpfCnpj: formatCpfCnpj(document.getElementById('clientCpfCnpj').value),
@@ -785,30 +903,53 @@
         estado: document.getElementById('clientEstado').value.toUpperCase() || '',
         complemento: document.getElementById('clientComplemento').value || '',
         anotacoes: document.getElementById('clientAnotacoes').value || '',
-        tipoContrato: tipoContrato,
+        tipoContrato,
         numOficio: tipoContrato === 'Defensoria' ? document.getElementById('clientNumOficio').value : '',
         valorContrato: valorTotal,
-        formaPagamento: formaPagamento,
-        numParcelas: numParcelas,
-        diaVencimento: diaVencimento
+        formaPagamento,
+        numParcelas,
+        diaVencimento: dataBase ? dataBase.getDate() : 10,
+        dataPrimeiroVencimento,
+        valoresParcelasDiferentes: !!customValues,
+        valoresParcelas: customValues ? valoresParcelas : []
       };
 
       await window.fsSetDoc(window.fsDoc(window.firebaseDB, 'clients', id), clientData);
 
-      // GERAÇÃO AUTOMÁTICA DE PARCELAS NO FIRESTORE SE FOR PARTICULAR
       if (tipoContrato === 'Particular' && valorTotal > 0) {
-        const valorParcela = (valorTotal / numParcelas);
+        const existentes = parcelas.filter(p => p.clienteId === id);
+        const statusExistente = new Map(existentes.map(p => [p.id, p.status || 'Pendente']));
+        const centavosTotal = Math.round(valorTotal * 100);
+        let valoresCentavos = [];
+        if (customValues) {
+          valoresCentavos = valoresParcelas.map(v => Math.round(v * 100));
+        } else {
+          const base = Math.floor(centavosTotal / numParcelas);
+          valoresCentavos = Array.from({length: numParcelas}, (_, i) => i === numParcelas - 1
+            ? centavosTotal - base * (numParcelas - 1) : base);
+        }
+
         const hoje = new Date();
+        const inicio = dataBase || hoje;
         for (let i = 1; i <= numParcelas; i++) {
-          const dataVenc = new Date(hoje.getFullYear(), hoje.getMonth() + (i - 1), diaVencimento);
+          const ano = inicio.getFullYear();
+          const mes = inicio.getMonth() + (i - 1);
+          const dia = Math.min(inicio.getDate(), new Date(ano, mes + 1, 0).getDate());
+          const dataVenc = new Date(ano, mes, dia);
+          const vencimento = `${dataVenc.getFullYear()}-${String(dataVenc.getMonth()+1).padStart(2,'0')}-${String(dataVenc.getDate()).padStart(2,'0')}`;
+          const parcelaId = `parc_${id}_${i}`;
           const parcelaData = {
             clienteId: id,
             numeroParcela: `${i}/${numParcelas}`,
-            valor: valorParcela,
-            vencimento: dataVenc.toISOString().split('T')[0],
-            status: 'Pendente'
+            valor: valoresCentavos[i - 1] / 100,
+            vencimento,
+            status: statusExistente.get(parcelaId) || 'Pendente'
           };
-          await window.fsSetDoc(window.fsDoc(window.firebaseDB, 'parcelas', `parc_${id}_${i}`), parcelaData);
+          await window.fsSetDoc(window.fsDoc(window.firebaseDB, 'parcelas', parcelaId), parcelaData);
+        }
+        for (const antiga of existentes) {
+          const numero = parseInt(String(antiga.numeroParcela || '').split('/')[0], 10);
+          if (numero > numParcelas) await window.fsDeleteDoc(window.fsDoc(window.firebaseDB, 'parcelas', antiga.id));
         }
       }
 
