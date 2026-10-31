@@ -89,10 +89,10 @@
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <h1 class="text-2xl font-bold tracking-tight text-brand-900">Tatiane Pannocchia</h1>
+            <h1 class="text-2xl font-bold tracking-tight text-brand-900">Tatiane Pannocchia Sartorelli</h1>
             <span class="px-2 py-0.5 text-[10px] bg-brand-100 text-brand-800 rounded-full font-semibold uppercase tracking-wider">Advocacia</span>
           </div>
-          <p class="text-xs sm:text-sm text-brand-700/70">Consultoria Jurídica</p>
+          <p class="text-xs sm:text-sm text-brand-700/70">Gestão de Processos e Clientes</p>
         </div>
       </div>
 
@@ -1243,7 +1243,7 @@
             <td class="py-3.5 px-6 text-right space-x-1">
               <button onclick="viewProcesso('${p.id}')" class="p-1.5 bg-brand-50 text-brand-700 rounded-lg hover:bg-brand-100" title="Visualizar"><i data-lucide="eye" class="w-4 h-4"></i></button>
               <button onclick="openPrazoModal('${p.id}')" class="p-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100" title="Editar"><i data-lucide="edit" class="w-4 h-4"></i></button>
-              ${p.status !== 'Baixado' ? `<button onclick="darBaixaProcesso('${p.id}')" class="px-2.5 py-1 bg-slate-700 hover:bg-slate-800 text-white text-xs rounded-xl font-medium transition-all" title="Dar baixa">Dar Baixa</button>` : ''}
+              ${p.status !== 'Baixado' ? `<button onclick="darBaixaProcesso('${p.id}')" class="p-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-all" title="Dar baixa" aria-label="Dar baixa"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>` : ''}
               <button onclick="deleteProcesso('${p.id}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             </td>
           </tr>
@@ -1275,13 +1275,32 @@
     }
 
     async function deleteClient(id) {
-      if (confirm('Deseja excluir este cliente e seus registros?')) {
-        await window.fsDeleteDoc(window.fsDoc(window.firebaseDB, 'clients', id));
-        await loadData();
-        renderClients();
-        renderFinanceiro();
-        renderPrazos();
-        updateDashboard();
+      if (confirm('Deseja excluir este cliente, todos os processos vinculados e todas as parcelas/valores associados? Esta ação não pode ser desfeita.')) {
+        try {
+          // Apaga primeiro os registros vinculados para não deixar processos ou valores órfãos.
+          const processosVinculados = prazos.filter(p => p.clienteId === id);
+          const parcelasVinculadas = parcelas.filter(p => p.clienteId === id);
+
+          await Promise.all([
+            ...processosVinculados.map(p => window.fsDeleteDoc(window.fsDoc(window.firebaseDB, 'prazos', p.id))),
+            ...parcelasVinculadas.map(p => window.fsDeleteDoc(window.fsDoc(window.firebaseDB, 'parcelas', p.id)))
+          ]);
+          await window.fsDeleteDoc(window.fsDoc(window.firebaseDB, 'clients', id));
+          await loadData();
+          renderClients();
+          renderFinanceiro();
+          renderPrazos();
+          updateDashboard();
+          showToast('Cliente e todos os registros vinculados foram excluídos.', 'success');
+        } catch (error) {
+          console.error('Erro ao excluir cliente e registros vinculados:', error);
+          showToast('Não foi possível excluir todos os registros. Verifique a conexão e tente novamente.', 'error');
+          await loadData();
+          renderClients();
+          renderFinanceiro();
+          renderPrazos();
+          updateDashboard();
+        }
       }
     }
 
@@ -1315,7 +1334,8 @@
         return true;
       });
 
-      filteredParcelas.sort((a, b) => String(b.vencimento || '').localeCompare(String(a.vencimento || '')));
+      // Ordem crescente: vencimento mais próximo/antigo primeiro, seguido dos vencimentos futuros.
+      filteredParcelas.sort((a, b) => String(a.vencimento || '').localeCompare(String(b.vencimento || '')));
 
       tbody.innerHTML = filteredParcelas.map(p => {
         const cli = clients.find(c => c.id === p.clienteId);
