@@ -20,6 +20,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyASwLb54IjFjpYoqVacuoVuOj_5LPPTrew",
@@ -33,6 +34,28 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Encerra a sessão autenticada e retorna à tela de login.
+    window.handleLogout = async function() {
+      const logoutButton = document.getElementById('btnLogout');
+      if (logoutButton) {
+        logoutButton.disabled = true;
+        logoutButton.classList.add('opacity-70', 'cursor-wait');
+      }
+
+      try {
+        await signOut(auth);
+        window.location.href = 'index.html';
+      } catch (error) {
+        console.error('Erro ao sair do sistema:', error);
+        if (logoutButton) {
+          logoutButton.disabled = false;
+          logoutButton.classList.remove('opacity-70', 'cursor-wait');
+        }
+        alert('Não foi possível encerrar a sessão. Tente novamente.');
+      }
+    };
 
     window.firebaseDB = db;
     window.fsGetDocs = getDocs;
@@ -115,6 +138,12 @@
         <button onclick="switchTab('financeiro')" id="tab-financeiro" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-medium text-brand-800 transition-all flex items-center space-x-2">
           <i data-lucide="dollar-sign" class="w-4 h-4"></i>
           <span>Financeiro</span>
+        </button>
+        <button type="button" onclick="handleLogout()" id="btnLogout"
+          class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-rose-700 bg-rose-100/80 border border-rose-200/80 hover:bg-rose-200 hover:text-rose-800 hover:border-rose-300 hover:shadow-md hover:shadow-rose-200/60 transition-all duration-200 flex items-center space-x-2 active:scale-[0.98]"
+          title="Sair do sistema" aria-label="Sair do sistema">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          <span>Sair</span>
         </button>
       </nav>
     </header>
