@@ -90,23 +90,130 @@
   </script>
 
   <style>
+    :root {
+      color-scheme: light;
+      --purple-deep: #211238;
+      --purple-mid: #513078;
+      --purple-light: #9b79c7;
+      --lavender: #e9ddf7;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #fdfbfc;
-      color: #332d38;
+      color: #332744;
+      background:
+        radial-gradient(ellipse at 14% 18%, rgba(202, 164, 255, .34), transparent 34%),
+        radial-gradient(ellipse at 88% 82%, rgba(123, 77, 174, .34), transparent 38%),
+        linear-gradient(135deg, #211238 0%, #392052 34%, #65418a 68%, #302044 100%);
+      background-attachment: fixed;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      width: 22rem;
+      height: 22rem;
+      border-radius: 50%;
+      filter: blur(2px);
+      pointer-events: none;
+      opacity: .42;
+      z-index: 0;
+    }
+
+    body::before {
+      top: -9rem;
+      right: -7rem;
+      background: radial-gradient(circle, rgba(224, 199, 255, .48), transparent 68%);
+    }
+
+    body::after {
+      bottom: -11rem;
+      left: -8rem;
+      background: radial-gradient(circle, rgba(157, 112, 207, .55), transparent 70%);
+    }
+
+    .login-card {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      background: linear-gradient(145deg, rgba(255,255,255,.86), rgba(248,242,255,.72));
+      border: 1px solid rgba(255,255,255,.58);
+      box-shadow:
+        0 28px 80px rgba(17, 7, 31, .34),
+        0 8px 24px rgba(27, 12, 45, .16),
+        inset 0 1px 0 rgba(255,255,255,.8);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+    }
+
+    .login-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 5px;
+      background: linear-gradient(90deg, #b99add, #7751a0, #d5b9f3);
+    }
+
+    .login-input {
+      background: rgba(255,255,255,.66) !important;
+      border-color: rgba(126, 91, 160, .24) !important;
+      color: #342345;
+      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .login-input::placeholder { color: #a79ab4; }
+
+    .login-input:focus {
+      background: rgba(255,255,255,.94) !important;
+      border-color: #9270bb !important;
+      box-shadow: 0 0 0 4px rgba(146,112,187,.16);
+    }
+
+    .login-button {
+      background: linear-gradient(110deg, #67428e, #8057a9 55%, #68438e);
+      box-shadow: 0 9px 22px rgba(91, 55, 130, .28), inset 0 1px 0 rgba(255,255,255,.22);
+      transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+    }
+
+    .login-button:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+      box-shadow: 0 13px 28px rgba(91, 55, 130, .34);
+    }
+
+    .login-button:active { transform: translateY(0); }
+
+    @media (max-width: 480px) {
+      body { padding: 1rem; }
+      .login-card { padding: 1.65rem; border-radius: 1.5rem; }
+      .login-title { font-size: 1.25rem; line-height: 1.5rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .01ms !important; }
     }
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 selection:bg-brand-200 selection:text-brand-900">
 
-  <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-brand-100 p-8 space-y-6">
+  <div class="login-card w-full max-w-md rounded-3xl p-8 space-y-6">
     
     <!-- Cabeçalho do Login -->
     <div class="text-center space-y-2">
-    <div class="w-48 h-24 mx-auto rounded-2xl bg-brand-FFF text-white flex items-center justify-center shrink-0">
+ <!--      <div class="w-16 h-16 mx-auto rounded-2xl bg-brand-500 text-white flex items-center justify-center shadow-lg shadow-brand-500/25">
+        <i data-lucide="scale" class="w-8 h-8"></i>
+      </div>
+-->	  
+	  
+      <div class="w-48 h-24 mx-auto rounded-2xl bg-brand-FFF text-white flex items-center justify-center shrink-0">
           <img src="logoTati.png"/>
       </div> 	  
-      <h1 class="text-2xl font-bold tracking-tight text-brand-900">Tatiane Pannocchia Sartorelli</h1>
+      <h1 class="login-title text-2xl font-bold tracking-tight text-brand-900">Tatiane Pannocchia Sartorelli</h1>
       <p class="text-xs text-brand-700/70 uppercase tracking-widest font-semibold">Advocacia</p>
     </div>
 
@@ -121,7 +228,7 @@
           <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-400">
             <i data-lucide="mail" class="w-4 h-4"></i>
           </span>
-          <input type="email" id="loginEmail" required placeholder="exemplo@advocacia.com" class="w-full pl-10 pr-4 py-2.5 bg-brand-50/30 border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/30">
+          <input type="email" id="loginEmail" required placeholder="exemplo@advocacia.com" class="login-input w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none">
         </div>
       </div>
 
@@ -131,11 +238,11 @@
           <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-400">
             <i data-lucide="lock" class="w-4 h-4"></i>
           </span>
-          <input type="password" id="loginSenha" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 bg-brand-50/30 border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/30">
+          <input type="password" id="loginSenha" required placeholder="••••••••" class="login-input w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none">
         </div>
       </div>
 
-      <button type="submit" class="w-full mt-2 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-medium text-sm shadow-md shadow-brand-500/25 transition-all flex items-center justify-center space-x-2">
+      <button type="submit" class="login-button w-full mt-2 py-3.5 rounded-xl text-white font-semibold text-sm transition-all flex items-center justify-center space-x-2">
         <span id="btnText">Entrar no Sistema</span>
         <div id="btnLoader" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
       </button>
